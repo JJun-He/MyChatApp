@@ -23,7 +23,7 @@ data class User(
     /**
      * Firestore에 저장하기 위한 Map 변환 함수
      */
-    fun toMain(): Map<String, Any?>{
+    fun toMap(): Map<String, Any?>{
         return mapOf(
             "uid" to uid,
             "email" to email,
