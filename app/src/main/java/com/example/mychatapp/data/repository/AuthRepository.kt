@@ -31,6 +31,39 @@ class AuthRepository {
         get() = auth.currentUser?.uid
 
     /**
+     * Firestore에서 사용자 프로필 정보를 가져오는 함수
+     */
+    suspend fun getUserProfile(userId: String): Result<User>{
+        return try{
+            val userDoc = firestore.collection("users")
+                .document(userId)
+                .get()
+                .await()
+
+            if(userDoc.exists()){
+                val user = userDoc.toObject(User::class.java)
+                if(user != null){
+                    Result.success(user)
+                }else{
+                    Result.failure(Exception("사용자 정보를 파싱할 수 없습니다"))
+                }
+            }else{
+                // 문서가 없으면 FirebaseUser 정보로 새로 생성
+                val firebaseUser = auth.currentUser
+                if(firebaseUser != null){
+                    val user = createUserFromFirebaseUser(firebaseUser)
+                    Result.success(user)
+                }else{
+                    Result.failure(Exception("사용자 정보를 찾을 수 없습니다."))
+                }
+            }
+        }catch (e: Exception){
+            Log.e("AuthRepository", "Get user profile error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    /**
      * 이메일과 비밀번호로 회원가입하는 함수
      */
     suspend fun signUpWithEmail(

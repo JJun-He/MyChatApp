@@ -46,6 +46,23 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
     }
 
     /**
+     * Firestore에서 사용자 프로필 정보를 로드하는 함수
+     */
+    private suspend fun loadUserProfile(userId: String){
+        try{
+            val result = authRepository.getUserProfile(userId)
+            result.onSuccess { user ->
+                _currentUser.value = user
+                _authState.value = AuthState.Authenticated(user)
+            }.onFailure { exception ->
+                _authState.value = AuthState.Error(exception.message ?: "사용자 정보 로드 실패")
+            }
+        }catch (e: Exception){
+            _authState.value = AuthState.Error("사용자 정보 로드 중 오류 발생")
+        }
+    }
+
+    /**
      *  이메일과 비밀번호로 회원가입하는 함수
      */
     fun signUp(email: String, password: String, displayName: String){

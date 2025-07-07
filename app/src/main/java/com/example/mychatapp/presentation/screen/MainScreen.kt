@@ -14,11 +14,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mychatapp.data.repository.AuthRepository
 import com.example.mychatapp.presentation.viewmodel.AuthViewModel
 import javax.annotation.Signed
@@ -30,9 +32,10 @@ import javax.annotation.Signed
 @Composable
 fun MainScreen(
     authViewModel: AuthViewModel,
-    onSigned: () -> Unit
+    onSignOut: () -> Unit
 ) {
-    val currentUser = authViewModel.authRepository.currentUser
+    // ViewModel에서 현재 사용자 정보 가져오기
+    val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
     val userName = currentUser?.displayName?:currentUser?.email?: "사용자"
 
     Column(
