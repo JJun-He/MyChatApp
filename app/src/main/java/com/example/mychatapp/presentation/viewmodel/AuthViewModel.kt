@@ -3,6 +3,7 @@ package com.example.mychatapp.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mychatapp.data.model.AuthState
+import com.example.mychatapp.data.model.User
 import com.example.mychatapp.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,10 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    // 현재 사용자 정보를 위한 StateFlow 추가
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     init {
         checkAuthState()
