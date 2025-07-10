@@ -25,4 +25,28 @@ data class Message(
     val type: MessageType = MessageType.TEXT,
     val chatRoomId: String = "",
     val imageUrl: String = ""
-)
+){
+    /**
+     * 시간 표시용 포맷된 시간 문자열 반환
+     */
+    fun getFormattedTime(): String{
+        return timestamp?.toDate().let{date ->
+            val now = System.currentTimeMillis()
+            val messageTime = date?.time ?: 0L
+            val diffInHours = (now - messageTime) / (1000 * 60 * 60)
+
+            when{
+                diffInHours < 24 ->{
+                    java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(date)
+                }
+                diffInHours < 24*7 ->{
+                    java.text.SimpleDateFormat("E HH:mm", java.util.Locale.getDefault()).format(date)
+                }
+
+                else -> {
+                    java.text.SimpleDateFormat("MM/dd HH:mm", java.util.Locale.getDefault()).format(date)
+                }
+            }
+        }?:""
+    }
+}
