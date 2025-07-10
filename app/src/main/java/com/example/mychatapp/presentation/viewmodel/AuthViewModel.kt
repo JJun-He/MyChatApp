@@ -36,7 +36,7 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
     /**
      * 현재 인증 상태를 확인하는 함수
      */
-    private fun checkAuthState(){
+    fun checkAuthState(){
         val currentUser = authRepository.currentUser
         _authState.value = if(currentUser != null){
             AuthState.Loading // 실제로는 Firestore에서 사용자 정보를 가져와야 함

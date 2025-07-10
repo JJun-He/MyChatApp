@@ -18,17 +18,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mychatapp.data.repository.AuthRepository
 import com.example.mychatapp.presentation.viewmodel.AuthViewModel
+import java.nio.file.WatchEvent
 import javax.annotation.Signed
 
 
 /**
  * 로그인 성공 후 메인 화면 (임시)
  */
+
 @Composable
 fun MainScreen(
     authViewModel: AuthViewModel,
@@ -95,3 +98,4 @@ fun MainScreen(
         }
     }
 }
+
