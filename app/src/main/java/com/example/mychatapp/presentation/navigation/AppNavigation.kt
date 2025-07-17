@@ -12,6 +12,7 @@ import com.example.mychatapp.data.model.AuthState
 import com.example.mychatapp.data.repository.AuthRepository
 import com.example.mychatapp.data.repository.ChatRepository
 import com.example.mychatapp.presentation.screen.AuthScreen
+import com.example.mychatapp.presentation.screen.ChatRoomListScreen
 import com.example.mychatapp.presentation.viewmodel.AuthViewModel
 import com.example.mychatapp.presentation.viewmodel.AuthViewModelFactory
 import com.example.mychatapp.presentation.viewmodel.ChatViewModel
@@ -101,7 +102,7 @@ fun AppNavigation (
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onChatRoomCreated = {chatRoomId ->
+                onChatRoomCreated = { chatRoomId ->
                     navController.navigate("chat/$chatRoomId"){
                         popUpTo("create_chat"){inclusive = true}
                     }
