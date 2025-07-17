@@ -28,7 +28,7 @@ data class ChatRoom(
     fun getOtherParticipantName(currentUserId: String): String{
         return if(!isGroup && participants.size == 2){
             val otherUserId = participants.find{it != currentUserId}
-            participantNames[otherUserId] ?: "알 수 없는 사용자"
+            particpantNames[otherUserId] ?: "알 수 없는 사용자"
         }else{
             name
         }
