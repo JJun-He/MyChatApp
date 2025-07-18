@@ -91,7 +91,7 @@ class ChatViewModel(
     /**
      * 메시지를 전송하는 함수
      */
-    fun sendMessages(chatRoomId: String, content: String){
+    fun sendMessage(chatRoomId: String, content: String){
         if(content.trim().isEmpty()) return
 
         viewModelScope.launch {
