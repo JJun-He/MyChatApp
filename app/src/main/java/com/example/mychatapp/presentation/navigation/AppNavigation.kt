@@ -2,6 +2,7 @@ package com.example.mychatapp.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -28,6 +29,7 @@ import com.example.mychatapp.presentation.viewmodel.ChatViewModelFactory
 fun AppNavigation (
     authRepository: AuthRepository,
     chatRepository: ChatRepository,
+    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ){
     // AuthViewModel 생성
