@@ -14,12 +14,15 @@ data class User(
     val email: String = "",
     val displayName: String = "",
     val photoUrl: String= "",
-    val isOnline: Boolean = false,
+    var isOnline: Boolean = false,
     @ServerTimestamp
     val lastSeen: Timestamp? = null,
     @ServerTimestamp
     val createdAt: Timestamp? = null
 ){
+    // Firestore 직렬화를 위한 기본 생성자 추가
+    constructor() : this("", "", "", "", false, null, null)
+
     /**
      * Firestore에 저장하기 위한 Map 변환 함수
      */

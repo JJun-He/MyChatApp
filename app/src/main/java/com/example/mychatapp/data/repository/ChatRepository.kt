@@ -92,28 +92,52 @@ class ChatRepository{
         content: String,
         type: MessageType = MessageType.TEXT
     ): Result<Unit>{
-        return try{
-            val currentUser = auth.currentUser ?: throw Exception("로그인이 필요합니다")
+        return try {
+            val currentUser = auth.currentUser
+            if (currentUser == null) {
+                Log.e("Chat Repository", "User not authenticated")
+                return Result.failure(Exception("로그인이 필요합니다"))
+            }
+
+            Log.e(
+                "ChatRepository",
+                "Attempting to send message - ChatRoom: $chatRoomId, Content: $content"
+            )
 
             val messageRef = firestore.collection("messages").document()
+
+            // 메시지 객체를 Map으로 변환하여 전송(리플렉션 해결)
+            var messageData = hashMapOf(
+                "id" to messageRef.id,
+                "senderid" to currentUser.uid,
+                "senderName" to (currentUser.displayName ?: "사용자"),
+                "content" to content,
+                "type" to type.name, // enum을 문자열로 저장
+                "chatRoomId" to chatRoomId,
+                "timestamp" to com.google.firebase.Timestamp.now()
+            )
+
+            // 메시지 저장
+            messageRef.set(messageData).await()
+            Log.e("ChatRepository", "Message saved successfully: ${messageRef.id}")
+
+            // Message 객체 생성 (마지막 메시지 업데이트용)
             val message = Message(
                 id = messageRef.id,
                 senderId = currentUser.uid,
                 senderName = currentUser.displayName ?: "사용자",
                 content = content,
                 type = type,
-                chatRoomId = chatRoomId
+                chatRoomId = chatRoomId,
+                timestamp = com.google.firebase.Timestamp.now()
             )
-
-            // 메시지 저장
-            messageRef.set(message).await()
 
             // 채팅방의 마지막 메시지 정보 업데이트
             updateChatRoomLastMessage(chatRoomId, message)
 
-            Log.d("ChatRepository", "Message sent: ${message.id}")
+            Log.d("ChatRepository", "Message sent Successfully: ${message.id}")
             Result.success(Unit)
-        }catch (e: Exception){
+        } catch (e: Exception){
             Log.e("ChatRepository", "Error sending message: ${e.message}")
             Result.failure(e)
         }
@@ -125,7 +149,7 @@ class ChatRepository{
     private suspend fun updateChatRoomLastMessage(chatRoomId: String, message: Message){
         try {
             val chatRoomRef = firestore.collection("chatRooms").document(chatRoomId)
-            val updates = mapOf(
+            val updates = hashMapOf<String, Any>(
                 "lastMessage" to when (message.type){
                     MessageType.TEXT -> message.content
                     MessageType.IMAGE -> "이미지"
@@ -137,8 +161,9 @@ class ChatRepository{
             )
 
             chatRoomRef.update(updates).await()
+            Log.d("Chat Repository", "Last message updated successfully")
         }catch (e: Exception){
-            Log.e("ChatRepository", "Error updating last message: ${e.message}")
+            Log.e("ChatRepository", "Error updating last message: ${e.message}",e)
         }
     }
 
@@ -155,13 +180,13 @@ class ChatRepository{
             val currentUserName = auth.currentUser?.displayName?: "사용자"
 
             // 참여자 정보 가져오기
-            val particpantNames = mutableMapOf<String, String>()
+            val participantNames = mutableMapOf<String, String>()
             val allParticipants = (participantIds + currentUserId).distinct()
 
             for(userId in allParticipants){
                 val userDoc = firestore.collection("users").document(userId).get().await()
                 val user = userDoc.toObject<User>()
-                particpantNames[userId] = user?.displayName?:"알 수 없는 사용자"
+                participantNames[userId] = user?.displayName?:"알 수 없는 사용자"
             }
 
             // 개인 채팅방인 경우 이미 존재하는지 확인
@@ -178,10 +203,11 @@ class ChatRepository{
                 id = chatRoomRef.id,
                 name = if(isGroup) name else "",
                 participants = allParticipants,
-                particpantNames = particpantNames,
+                particpantNames = participantNames,
                 createdBy = currentUserId,
                 isGroup = isGroup,
                 lastMessage = if (isGroup) "${currentUserName}님이 채팅방을 생성했습니다." else "새로운 채팅이 시작되었습니다."
+
             )
 
             chatRoomRef.set(chatRoom).await()
