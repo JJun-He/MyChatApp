@@ -6,6 +6,7 @@ import com.example.mychatapp.data.model.ChatRoom
 import com.example.mychatapp.data.model.Message
 import com.example.mychatapp.data.model.MessageType
 import com.example.mychatapp.data.model.User
+import com.example.mychatapp.data.service.OpenAIService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -21,6 +22,10 @@ import kotlinx.coroutines.tasks.await
 class ChatRepository{
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+
+
+    // ai 서비스 추가
+    private val openAIService = OpenAIService();
 
     /**
      * 현재 사용자가 참여 중인 채팅방 목록을 실시간으로 가져오는 함수
@@ -284,6 +289,59 @@ class ChatRepository{
         }catch (e: Exception){
             Log.e("ChatRepository", "Error searching users: ${e.message}")
             Result.failure(e)
+        }
+    }
+
+    /**
+     * AI 어시스턴트 요청 처리
+     */
+    suspend fun processAIRequest(
+        prompt: String,
+        chatRoomId: String,
+        recentMessages: List<Message>
+    ): Result<Unit>{
+        return try {
+            Log.d("ChatRepository", "AI 요청 처리 시작: $prompt")
+
+            // @AI 제거하고 실제 질문 추출
+            val cleanPrompt = prompt.removePrefix("@AI").trim()
+            if(cleanPrompt.isEmpty()){
+                return Result.failure(Exception("AI에게 질문할 내용을 입력해주세요"))
+            }
+
+            // OpenAI API 호출
+            val aiResult = openAIService.getChatResponse(cleanPrompt, recentMessages)
+
+            aiResult.onSuccess { aiResponse ->
+                // AI 응답을 Firestore에 저장
+                val messageRef = firestore.collection("messages").document()
+                val messageData = hashMapOf<String, Any>(
+                    "id" to messageRef.id,
+                    "senderId" to "AI_ASSISTANT",
+                    "senderName" to "AI 어시스턴트",
+                    "content" to aiResponse,
+                    "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp(),
+                    "type" to "SYSTEM",
+                    "chatRoomId" to chatRoomId,
+                    "imageUrl" to ""
+                )
+
+                messageRef.set(messageData).await()
+                Log.d("ChatRepository", "AI 응답 저장 완료 ")
+
+                // 채팅방 마지막 메시지 업데이트
+                updateChatRoomLastMessage(
+                    chatRoomId = chatRoomId,
+                    lastMessage = "${aiResponse.take(50)}${if (aiResponse.length > 50) "..." else ""}",
+                    senderId = "AI_ASSISTANT",
+                    senderName = "AI 어시스턴트",
+                )
+            }.onFailure { exception ->
+                Log.e("ChatRepository", "AI 요청 실패: ${exception.message}")
+
+                // 에러 메시지도 채팅에 표시
+
+            }
         }
     }
 }

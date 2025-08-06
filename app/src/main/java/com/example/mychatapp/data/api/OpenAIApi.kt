@@ -1,6 +1,6 @@
 package com.example.mychatapp.data.api
 
-import com.google.api.Usage
+
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -41,7 +41,7 @@ data class ChatChoice(
 data class Usage(
     val prompt_tokens: Int,
     val completion_tokens: Int,
-    val total_tokens: Int
+    val total_tokens : Int?
 )
 
 /**
